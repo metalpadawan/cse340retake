@@ -6,10 +6,12 @@ const Util = {}
  ************************** */
 Util.getNav = async function (req, res, next) {
   let data = await invModel.getClassifications()
+  // Start the navigation list with a permanent link back to the home page.
   let list = "<ul>"
   list += '<li><a href="/" title="Home page">Home</a></li>'
   data.rows.forEach((row) => {
     list += "<li>"
+    // Each classification becomes a clickable route to that category page.
     list +=
       '<a href="/inv/type/' +
       row.classification_id +
@@ -30,6 +32,7 @@ Util.getNav = async function (req, res, next) {
 Util.buildClassificationGrid = async function(data){
   let grid = ""
   if(data.length > 0){
+    // Build one card-like list item for every returned vehicle.
     grid = '<ul id="inv-display">'
     data.forEach(vehicle => { 
       grid += '<li>'
@@ -52,6 +55,7 @@ Util.buildClassificationGrid = async function(data){
     })
     grid += '</ul>'
   } else { 
+    // Show a friendly message instead of an empty list when nothing matches.
     grid += '<p class="notice">Sorry, no matching vehicles could be found.</p>'
   }
   return grid

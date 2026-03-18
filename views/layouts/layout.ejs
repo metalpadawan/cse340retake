@@ -4,9 +4,11 @@
     
 <body>
     <div id="wrapper">
+        <!-- Shared site header and nav display on every page. -->
         <%- include("../partials/header") %>
         <%- include("../partials/navigation") %>
 
+            <!-- express-ejs-layouts injects the current page view here. -->
             <main>
                 <%- body %>
             </main>

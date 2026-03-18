@@ -8,6 +8,7 @@ require("dotenv").config()
  * *************** */
 let pool
 if (process.env.NODE_ENV == "development") {
+  // Local development uses SSL for this hosted database connection.
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -20,6 +21,7 @@ if (process.env.NODE_ENV == "development") {
 module.exports = {
   async query(text, params) {
     try {
+      // Wrap pool.query so each development query can be logged for troubleshooting.
       const res = await pool.query(text, params)
       console.log("executed query", { text })
       return res
@@ -30,6 +32,7 @@ module.exports = {
   },
 }
 } else {
+  // Production can use the pool directly with the deployed connection string.
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   })

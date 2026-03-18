@@ -21,6 +21,7 @@ app.set("view engine", "ejs")
 app.use(expressLayouts)
 app.set("layout", "./layouts/layout") //not at views root
 
+// Make the navigation HTML available to every rendered view through res.locals.
 app.use(async (req, res, next) => {
   try {
     res.locals.nav = await utilities.getNav()
@@ -47,6 +48,7 @@ const host = process.env.HOST || "localhost"
 /* ***********************
  * Log statement to confirm server operation
  *************************/
+// Start the Express server using environment values when available.
 app.listen(port, () => {
   console.log(`app listening on ${host}:${port}`)
 })
