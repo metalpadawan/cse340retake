@@ -180,3 +180,40 @@ footer {
     margin-bottom: 0.8rem;
   }
 }
+
+/* Vehicle detail layout - image and info side by side on large screens */
+.vehicle-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+.vehicle-detail__image {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.vehicle-detail__info h2 {
+  margin-top: 0;
+  color: var(--dark);
+}
+
+/* Make the price stand out visually */
+.vehicle-detail__price {
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+.vehicle-detail__info p {
+  margin: 0.6rem 0;
+  line-height: 1.6;
+}
+
+/* Stack image and info into a single column on small screens */
+@media (max-width: 700px) {
+  .vehicle-detail {
+    grid-template-columns: 1fr;
+  }
+}

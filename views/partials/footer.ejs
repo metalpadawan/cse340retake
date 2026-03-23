@@ -1,6 +1,8 @@
-<% /* Build the current year once so the footer always stays up to date. */ %>
+<%# Build the current year once so the footer always stays up to date. %>
 <% const d = new Date()
 let year = d.getFullYear() %>
 <footer>
   <p class="copyright">&copy; <%= year %>, CSE 340 App</p>
+  <%# Task 3 - intentional error link to test the 500 error handler %>
+  <p><a href="/inv/trigger-error">Trigger Server Error</a></p>
 </footer>

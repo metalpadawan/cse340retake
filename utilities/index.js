@@ -27,8 +27,8 @@ Util.getNav = async function (req, res, next) {
 }
 
 /* **************************************
-* Build the classification view HTML
-* ************************************ */
+ * Build the classification view HTML
+ * ************************************ */
 Util.buildClassificationGrid = async function(data){
   let grid = ""
   if(data.length > 0){
@@ -59,6 +59,34 @@ Util.buildClassificationGrid = async function(data){
     grid += '<p class="notice">Sorry, no matching vehicles could be found.</p>'
   }
   return grid
+}
+
+/* **************************************
+ * Build the vehicle detail view HTML
+ * ************************************ */
+Util.buildVehicleDetail = async function (vehicle) {
+  // Wrap the vehicle's data in a structured HTML block for the detail view.
+  return `
+    <section class="vehicle-detail">
+      <img 
+        src="${vehicle.inv_image}" 
+        alt="Image of ${vehicle.inv_make} ${vehicle.inv_model}" 
+        class="vehicle-detail__image"
+      />
+      <div class="vehicle-detail__info">
+        <h2>${vehicle.inv_year} ${vehicle.inv_make} ${vehicle.inv_model}</h2>
+        <!-- Format price as US currency with symbol and commas -->
+        <p class="vehicle-detail__price">
+          <strong>Price:</strong> 
+          ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(vehicle.inv_price)}
+        </p>
+        <!-- Format mileage with place value commas -->
+        <p><strong>Mileage:</strong> ${new Intl.NumberFormat("en-US").format(vehicle.inv_miles)} miles</p>
+        <p><strong>Color:</strong> ${vehicle.inv_color}</p>
+        <p><strong>Description:</strong> ${vehicle.inv_description}</p>
+      </div>
+    </section>
+  `
 }
 
 /* ****************************************
