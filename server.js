@@ -5,6 +5,7 @@
 /* ***********************
  * Require Statements
  *************************/
+const accountRoute = require("./routes/accountRoute")
 const inventoryRoute = require("./routes/inventoryRoute")
 const baseController = require("./controllers/baseController")
 const express = require("express")
@@ -43,6 +44,7 @@ app.use(function(req, res, next){
 app.set("view engine", "ejs")
 app.use(expressLayouts)
 app.set("layout", "./layouts/layout") //not at views root
+app.use("/account", accountRoute)
 
 // Make the navigation HTML available to every rendered view through res.locals.
 app.use(async (req, res, next) => {
