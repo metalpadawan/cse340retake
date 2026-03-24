@@ -1,11 +1,16 @@
 // Needed Resources
 const express = require("express")
 const router = new express.Router()
-const accountController = require("../controllers/accountController")
 const utilities = require("../utilities/")
+const accountController = require("../controllers/accountController")
 
 // Route to build the login view
 // Example result: /account/login
 router.get("/login", utilities.handleErrors(accountController.buildLogin))
 
+// Route to build the registration view
+// Example result: /account/register
+router.get("/register", utilities.handleErrors(accountController.buildRegister))
+
+// Export the router for use in server.js
 module.exports = router

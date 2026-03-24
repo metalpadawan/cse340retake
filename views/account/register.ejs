@@ -1,0 +1,75 @@
+<%# Display flash messages if any are sent from the controller %>
+<%- messages() %>
+
+<%# Use the title data value for the main heading %>
+<h1><%= title %></h1>
+
+<div class="register-container">
+  <form action="/account/register" method="post" class="register-form">
+
+    <label for="account_firstname">First name</label>
+    <input
+      type="text"
+      name="account_firstname"
+      id="account_firstname"
+      placeholder="Enter your first name"
+      required
+    />
+
+    <label for="account_lastname">Last name</label>
+    <input
+      type="text"
+      name="account_lastname"
+      id="account_lastname"
+      placeholder="Enter your last name"
+      required
+    />
+
+    <label for="account_email">Email address</label>
+    <input
+      type="email"
+      name="account_email"
+      id="account_email"
+      placeholder="Enter your email address"
+      required
+    />
+
+    <label for="account_password">Password</label>
+    <%# Password requirements listed to inform the user %>
+    <small>
+      Password must be at least 12 characters and contain at least 1 capital 
+      letter, 1 number, and 1 special character.
+    </small>
+    <div class="password-wrapper">
+      <input
+        type="password"
+        name="account_password"
+        id="account_password"
+        placeholder="Enter your password"
+        required
+      />
+      <%# Toggle button to show/hide password %>
+      <button 
+        type="button" 
+        id="togglePassword" 
+        class="toggle-password"
+        aria-label="Toggle password visibility"
+      >&#128065;</button>
+    </div>
+
+    <button type="submit" class="btn register-btn">Register</button>
+  </form>
+</div>
+
+<script>
+  // Toggle the password input between visible text and hidden bullets.
+  const togglePassword = document.getElementById('togglePassword')
+  const passwordInput = document.getElementById('account_password')
+
+  togglePassword.addEventListener('click', function () {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password'
+    passwordInput.setAttribute('type', type)
+    // Swap the icon to reflect the current visibility state.
+    this.textContent = type === 'password' ? '👁' : '🙈'
+  })
+</script>
