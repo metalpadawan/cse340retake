@@ -50,6 +50,45 @@ invCont.buildAddInventory = async function (req, res) {
 }
 
 /* ***************************
+ *  Build edit inventory view
+ * ************************** */
+invCont.buildEditInventory = async function (req, res, next) {
+  const inv_id = parseInt(req.params.inv_id, 10)
+
+  if (Number.isNaN(inv_id)) {
+    return next({ status: 404, message: "Sorry, we appear to have lost that page." })
+  }
+
+  const itemData = await invModel.getInventoryById(inv_id)
+
+  if (!itemData) {
+    return next({ status: 404, message: "Sorry, we appear to have lost that page." })
+  }
+
+  const classificationList = await utilities.buildClassificationList(
+    itemData.classification_id
+  )
+  const itemName = `${itemData.inv_make} ${itemData.inv_model}`
+
+  res.render("inventory/edit-inventory", {
+    title: "Edit " + itemName,
+    errors: null,
+    classificationList,
+    inv_id: itemData.inv_id,
+    inv_make: itemData.inv_make,
+    inv_model: itemData.inv_model,
+    inv_year: itemData.inv_year,
+    inv_description: itemData.inv_description,
+    inv_image: itemData.inv_image,
+    inv_thumbnail: itemData.inv_thumbnail,
+    inv_price: itemData.inv_price,
+    inv_miles: itemData.inv_miles,
+    inv_color: itemData.inv_color,
+    classification_id: itemData.classification_id,
+  })
+}
+
+/* ***************************
  *  Build inventory by classification view
  * ************************** */
 invCont.buildByClassificationId = async function (req, res, next) {
