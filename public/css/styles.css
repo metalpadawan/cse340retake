@@ -77,6 +77,33 @@ nav li a:hover {
   background: #3b4454;
 }
 
+/* Shared flash message styling for notices and errors. */
+ul.notice,
+ul.error {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+ul.notice {
+  background: #e7f6fd;
+  border: 1px solid #8fd3f4;
+  color: #0a5876;
+}
+
+ul.error {
+  background: #fdecec;
+  border: 1px solid #f2a7a7;
+  color: #8f1f1f;
+}
+
+ul.notice li,
+ul.error li {
+  margin: 0;
+}
+
 /* Position the hero callout over the featured vehicle image. */
 .hero {
   position: relative;

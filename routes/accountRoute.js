@@ -12,5 +12,8 @@ router.get("/login", utilities.handleErrors(accountController.buildLogin))
 // Example result: /account/register
 router.get("/register", utilities.handleErrors(accountController.buildRegister))
 
+// Route to process the registration data
+router.post("/register", utilities.handleErrors(accountController.registerAccount))
+
 // Export the router for use in server.js
 module.exports = router
