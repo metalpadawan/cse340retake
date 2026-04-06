@@ -1,0 +1,58 @@
+<%- messages() %>
+
+<% if (errors) { %>
+  <ul class="notice">
+    <% errors.array().forEach(error => { %>
+      <li><%= error.msg %></li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<h1><%= title %></h1>
+
+<section class="inventory-panel inventory-panel--wide">
+  <p class="form-note">
+    Confirm deletion. This action is permanent and cannot be undone.
+  </p>
+
+  <form action="/inv/delete" method="post" class="inventory-form">
+    <label for="inv_make">Make</label>
+    <input
+      type="text"
+      name="inv_make"
+      id="inv_make"
+      value="<%= locals.inv_make || '' %>"
+      readonly
+    />
+
+    <label for="inv_model">Model</label>
+    <input
+      type="text"
+      name="inv_model"
+      id="inv_model"
+      value="<%= locals.inv_model || '' %>"
+      readonly
+    />
+
+    <label for="inv_year">Year</label>
+    <input
+      type="text"
+      name="inv_year"
+      id="inv_year"
+      value="<%= locals.inv_year || '' %>"
+      readonly
+    />
+
+    <label for="inv_price">Price</label>
+    <input
+      type="text"
+      name="inv_price"
+      id="inv_price"
+      value="$<%= Number(locals.inv_price || 0).toLocaleString('en-US') %>"
+      readonly
+    />
+
+    <button type="submit" class="btn inventory-btn">Delete Vehicle</button>
+    <input type="hidden" name="inv_id" id="inv_id" value="<%= locals.inv_id || '' %>" />
+  </form>
+</section>

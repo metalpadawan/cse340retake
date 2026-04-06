@@ -536,6 +536,12 @@ footer {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.inventory-form input[readonly] {
+  background: var(--muted);
+  color: #54606f;
+  cursor: not-allowed;
+}
+
 .inventory-form textarea {
   resize: vertical;
   min-height: 120px;

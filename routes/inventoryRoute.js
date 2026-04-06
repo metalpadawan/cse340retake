@@ -32,6 +32,12 @@ router.get(
   utilities.handleErrors(invController.buildEditInventory)
 )
 
+// Route to build delete confirmation view
+router.get(
+  "/delete/:inv_id",
+  utilities.handleErrors(invController.buildDeleteConfirm)
+)
+
 // Process add classification form
 router.post(
   "/add-classification",
@@ -54,6 +60,12 @@ router.post(
   invValidate.inventoryRules(),
   utilities.handleErrors(invValidate.checkUpdateData),
   utilities.handleErrors(invController.updateInventory)
+)
+
+// Process inventory delete
+router.post(
+  "/delete",
+  utilities.handleErrors(invController.deleteInventoryItem)
 )
 
 // Route to build inventory by classification view
