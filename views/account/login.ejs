@@ -1,19 +1,28 @@
 <%# Display flash messages if any are sent from the controller %>
 <%- messages() %>
 
+<% if (errors) { %>
+  <ul class="notice">
+    <% errors.array().forEach(error => { %>
+      <li><%= error.msg %></li>
+    <% }) %>
+  </ul>
+<% } %>
+
 <%# Use the title data value for the main heading %>
 <h1><%= title %></h1>
 
 <div class="login-container">
   <p class="form-note">Both fields are required.</p>
 
-  <form action="/account/login" method="post" class="login-form">
+  <form id="loginForm" action="/account/login" method="post" class="login-form">
     <label for="account_email">Email:</label>
     <input 
       type="email" 
       name="account_email" 
       id="account_email" 
       placeholder="Enter your email"
+      value="<%= locals.account_email || '' %>"
       required 
     />
 
