@@ -1,0 +1,30 @@
+<%- messages() %>
+
+<h1><%= title %></h1>
+
+<section class="account-management">
+  <p class="form-note">
+    You are signed in and can manage your account information from here.
+  </p>
+
+  <div class="management-links">
+    <article class="management-link-card">
+      <h2>Account Details</h2>
+      <p><strong>Name:</strong> <%= accountData.account_firstname %> <%= accountData.account_lastname %></p>
+      <p><strong>Email:</strong> <%= accountData.account_email %></p>
+      <p><strong>Account Type:</strong> <%= accountData.account_type %></p>
+    </article>
+
+    <a class="management-link-card" href="/account/logout">
+      <h2>Log Out</h2>
+      <p>End your current session and clear the authentication cookie.</p>
+    </a>
+
+    <% if (accountData.account_type === "Employee" || accountData.account_type === "Admin") { %>
+      <a class="management-link-card" href="/inv/">
+        <h2>Inventory Management</h2>
+        <p>Open the management tools for classifications and inventory.</p>
+      </a>
+    <% } %>
+  </div>
+</section>

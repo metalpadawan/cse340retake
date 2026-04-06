@@ -2,6 +2,7 @@
 const utilities = require("../utilities/")
 const accountModel = require("../models/account-model")
 const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
 
 /* ****************************************
 *  Deliver login view
@@ -14,6 +15,17 @@ async function buildLogin(req, res, next) {
     nav,
     errors: null,
     account_email: "",
+  })
+}
+
+/* ****************************************
+*  Deliver account management view
+* *************************************** */
+async function buildAccountManagement(req, res, next) {
+  let nav = await utilities.getNav()
+  res.render("account/management", {
+    title: "Account Management",
+    nav,
   })
 }
 
@@ -91,4 +103,85 @@ async function registerAccount(req, res) {
   })
 }
 
-module.exports = { buildLogin, buildRegister, registerAccount }
+/* ****************************************
+ *  Process login request
+ * ************************************ */
+async function accountLogin(req, res) {
+  const nav = await utilities.getNav()
+  const { account_email, account_password } = req.body
+  const accountData = await accountModel.getAccountByEmail(account_email)
+
+  if (!accountData || typeof accountData === "string") {
+    req.flash("notice", "Please check your credentials and try again.")
+    return res.status(400).render("account/login", {
+      title: "Login",
+      nav,
+      errors: null,
+      account_email,
+    })
+  }
+
+  try {
+    const passwordMatch = await bcrypt.compare(
+      account_password,
+      accountData.account_password
+    )
+
+    if (!passwordMatch) {
+      req.flash("notice", "Please check your credentials and try again.")
+      return res.status(400).render("account/login", {
+        title: "Login",
+        nav,
+        errors: null,
+        account_email,
+      })
+    }
+
+    delete accountData.account_password
+
+    const accessToken = jwt.sign(
+      accountData,
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1h" }
+    )
+
+    const cookieOptions = {
+      httpOnly: true,
+      maxAge: 60 * 60 * 1000,
+    }
+
+    if (process.env.NODE_ENV !== "development") {
+      cookieOptions.secure = true
+    }
+
+    res.cookie("jwt", accessToken, cookieOptions)
+    req.flash("notice", `Welcome back, ${accountData.account_firstname}.`)
+    return res.redirect("/account/")
+  } catch (error) {
+    req.flash("notice", "Sorry, there was an error processing your login.")
+    return res.status(500).render("account/login", {
+      title: "Login",
+      nav,
+      errors: null,
+      account_email,
+    })
+  }
+}
+
+/* ****************************************
+ *  Process logout
+ * ************************************ */
+async function accountLogout(req, res) {
+  res.clearCookie("jwt")
+  req.flash("notice", "You have been logged out.")
+  return res.redirect("/")
+}
+
+module.exports = {
+  buildLogin,
+  buildAccountManagement,
+  buildRegister,
+  registerAccount,
+  accountLogin,
+  accountLogout,
+}

@@ -1,4 +1,5 @@
 const invModel = require("../models/inventory-model")
+const jwt = require("jsonwebtoken")
 const Util = {}
 
 /* ************************
@@ -111,6 +112,44 @@ Util.buildClassificationList = async function (classification_id = null) {
 
   classificationList += "</select>"
   return classificationList
+}
+
+/* ****************************************
+ * Middleware to check token validity
+ **************************************** */
+Util.checkJWTToken = (req, res, next) => {
+  res.locals.loggedin = false
+
+  if (req.cookies && req.cookies.jwt) {
+    jwt.verify(
+      req.cookies.jwt,
+      process.env.ACCESS_TOKEN_SECRET,
+      (err, accountData) => {
+        if (err) {
+          res.clearCookie("jwt")
+          return next()
+        }
+
+        res.locals.loggedin = true
+        res.locals.accountData = accountData
+        return next()
+      }
+    )
+  } else {
+    next()
+  }
+}
+
+/* ****************************************
+ *  Check login
+ * ************************************ */
+Util.checkLogin = (req, res, next) => {
+  if (res.locals.loggedin) {
+    return next()
+  }
+
+  req.flash("notice", "Please log in.")
+  return res.redirect("/account/login")
 }
 
 /* ****************************************
