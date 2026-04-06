@@ -7,8 +7,11 @@ const invCont = {}
  *  Build inventory management view
  * ************************** */
 invCont.buildManagement = async function (req, res) {
+  const classificationSelect = await utilities.buildClassificationList()
+
   res.render("inventory/management", {
     title: "Inventory Management",
+    classificationSelect,
   })
 }
 
@@ -91,10 +94,12 @@ invCont.addClassification = async function (req, res) {
 
   if (regResult && regResult.rowCount) {
     const nav = await utilities.getNav()
+    const classificationSelect = await utilities.buildClassificationList()
     req.flash("notice", `The ${classification_name} classification was added successfully.`)
     return res.render("inventory/management", {
       title: "Inventory Management",
       nav,
+      classificationSelect,
     })
   }
 
@@ -138,10 +143,12 @@ invCont.addInventory = async function (req, res) {
 
   if (regResult && regResult.rowCount) {
     const nav = await utilities.getNav()
+    const classificationSelect = await utilities.buildClassificationList()
     req.flash("notice", `${inv_make} ${inv_model} was added successfully.`)
     return res.render("inventory/management", {
       title: "Inventory Management",
       nav,
+      classificationSelect,
     })
   }
 
@@ -173,6 +180,25 @@ invCont.addInventory = async function (req, res) {
 invCont.triggerError = async function (req, res, next) {
   // Deliberately throw an error to verify the error handling middleware works.
   throw new Error("Intentional 500 error triggered!")
+}
+
+/* ***************************
+ *  Return inventory by classification as JSON
+ * ************************** */
+invCont.getInventoryJSON = async function (req, res, next) {
+  const classification_id = parseInt(req.params.classification_id, 10)
+
+  if (Number.isNaN(classification_id)) {
+    return res.json([])
+  }
+
+  const invData = await invModel.getInventoryByClassificationId(classification_id)
+
+  if (invData && invData.length > 0 && invData[0].inv_id) {
+    return res.json(invData)
+  }
+
+  return res.json([])
 }
 
 module.exports = invCont

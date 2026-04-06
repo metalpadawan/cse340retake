@@ -18,4 +18,21 @@
       <p>Add a new vehicle and assign it to one of the existing classifications.</p>
     </a>
   </div>
+
+  <section class="inventory-selection">
+    <h2>Manage Inventory</h2>
+    <p class="form-note">
+      Select a classification to view the vehicles in that group.
+    </p>
+
+    <div class="inventory-selection__control">
+      <label for="classificationList">Vehicle Classification</label>
+      <%- classificationSelect %>
+    </div>
+
+    <table id="inventoryDisplay"></table>
+    <noscript>JavaScript must be enabled to use this page.</noscript>
+  </section>
 </section>
+
+<script src="../../js/inventory.js"></script>
