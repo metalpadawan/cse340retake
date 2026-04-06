@@ -1,0 +1,33 @@
+<%- messages() %>
+
+<% if (errors) { %>
+  <ul class="notice">
+    <% errors.array().forEach(error => { %>
+      <li><%= error.msg %></li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<h1><%= title %></h1>
+
+<section class="inventory-panel">
+  <p class="form-note">
+    Classification names can use letters and numbers only. Do not include spaces or special characters.
+  </p>
+
+  <form action="/inv/add-classification" method="post" class="classification-form">
+    <label for="classificationName">Classification Name</label>
+    <input
+      type="text"
+      name="classification_name"
+      id="classificationName"
+      placeholder="Enter classification name"
+      pattern="[A-Za-z0-9]+"
+      title="Use letters and numbers only. No spaces or special characters."
+      value="<%= locals.classification_name || '' %>"
+      required
+    />
+
+    <button type="submit" class="btn inventory-btn">Add Classification</button>
+  </form>
+</section>
