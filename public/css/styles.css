@@ -576,6 +576,11 @@ footer {
   cursor: pointer;
 }
 
+.inventory-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 #inventoryDisplay {
   width: 100%;
   border-collapse: collapse;

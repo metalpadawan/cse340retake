@@ -89,6 +89,67 @@ invCont.buildEditInventory = async function (req, res, next) {
 }
 
 /* ***************************
+ *  Update inventory data
+ * ************************** */
+invCont.updateInventory = async function (req, res) {
+  const {
+    inv_id,
+    inv_make,
+    inv_model,
+    inv_description,
+    inv_image,
+    inv_thumbnail,
+    inv_price,
+    inv_year,
+    inv_miles,
+    inv_color,
+    classification_id,
+  } = req.body
+
+  const updateResult = await invModel.updateInventory(
+    inv_id,
+    inv_make,
+    inv_model,
+    inv_description,
+    inv_image,
+    inv_thumbnail,
+    inv_price,
+    inv_year,
+    inv_miles,
+    inv_color,
+    classification_id
+  )
+
+  if (updateResult) {
+    const itemName = `${updateResult.inv_make} ${updateResult.inv_model}`
+    req.flash("notice", `The ${itemName} was successfully updated.`)
+    return res.redirect("/inv/")
+  }
+
+  const classificationList = await utilities.buildClassificationList(
+    classification_id
+  )
+  const itemName = `${inv_make} ${inv_model}`
+  req.flash("notice", "Sorry, the update failed.")
+  return res.status(501).render("inventory/edit-inventory", {
+    title: "Edit " + itemName,
+    errors: null,
+    classificationList,
+    inv_id,
+    inv_make,
+    inv_model,
+    inv_year,
+    inv_description,
+    inv_image,
+    inv_thumbnail,
+    inv_price,
+    inv_miles,
+    inv_color,
+    classification_id,
+  })
+}
+
+/* ***************************
  *  Build inventory by classification view
  * ************************** */
 invCont.buildByClassificationId = async function (req, res, next) {

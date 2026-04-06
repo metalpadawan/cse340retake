@@ -15,7 +15,7 @@
     Review the current details below, make your changes, and submit the form to update this vehicle.
   </p>
 
-  <form action="/inv/update" method="post" class="inventory-form">
+  <form action="/inv/update" method="post" class="inventory-form" id="updateForm">
     <input type="hidden" name="inv_id" id="inv_id" value="<%= locals.inv_id || '' %>" />
 
     <label for="classificationList">Classification</label>
@@ -122,6 +122,8 @@
       required
     />
 
-    <button type="submit" class="btn inventory-btn">Update Vehicle</button>
+    <button type="submit" class="btn inventory-btn" disabled>Update Vehicle</button>
   </form>
 </section>
+
+<script src="/js/inv-update.js"></script>
