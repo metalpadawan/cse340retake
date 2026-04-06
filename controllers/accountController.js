@@ -3,6 +3,7 @@ const utilities = require("../utilities/")
 const accountModel = require("../models/account-model")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+require("dotenv").config()
 
 /* ****************************************
 *  Deliver login view
@@ -26,6 +27,7 @@ async function buildAccountManagement(req, res, next) {
   res.render("account/management", {
     title: "Account Management",
     nav,
+    errors: null,
   })
 }
 
@@ -111,7 +113,7 @@ async function accountLogin(req, res) {
   const { account_email, account_password } = req.body
   const accountData = await accountModel.getAccountByEmail(account_email)
 
-  if (!accountData || typeof accountData === "string") {
+  if (!accountData || accountData instanceof Error || typeof accountData === "string") {
     req.flash("notice", "Please check your credentials and try again.")
     return res.status(400).render("account/login", {
       title: "Login",
@@ -142,7 +144,7 @@ async function accountLogin(req, res) {
     const accessToken = jwt.sign(
       accountData,
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: 3600 }
     )
 
     const cookieOptions = {
