@@ -5,8 +5,9 @@
 <h1><%= title %></h1>
 
 <div class="login-container">
+  <p class="form-note">Both fields are required.</p>
+
   <form action="/account/login" method="post" class="login-form">
-    
     <label for="account_email">Email:</label>
     <input 
       type="email" 
@@ -17,11 +18,18 @@
     />
 
     <label for="account_password">Password:</label>
+    <div class="password-hint" id="login-password-requirements">
+      Passwords must be at least 12 characters and include 1 number,
+      1 lowercase letter, 1 uppercase letter, and 1 special character.
+    </div>
     <input 
       type="password" 
       name="account_password" 
       id="account_password" 
       placeholder="Enter your password"
+      aria-describedby="login-password-requirements"
+      pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{12,}$"
+      title="Password must be at least 12 characters and include 1 number, 1 lowercase letter, 1 uppercase letter, and 1 special character."
       required 
     />
 

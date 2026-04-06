@@ -24,6 +24,9 @@ async function buildRegister(req, res, next) {
     title: "Register",
     nav,
     errors: null,
+    account_firstname: "",
+    account_lastname: "",
+    account_email: "",
   })
 }
 
@@ -57,8 +60,12 @@ async function registerAccount(req, res) {
     // If the insertion failed, flash an error and return to the registration view.
     req.flash("notice", "Sorry, the registration failed.")
     res.status(501).render("account/register", {
-      title: "Registration",
+      title: "Register",
       nav,
+      errors: null,
+      account_firstname,
+      account_lastname,
+      account_email,
     })
   }
 }

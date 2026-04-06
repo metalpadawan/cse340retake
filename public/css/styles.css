@@ -268,14 +268,57 @@ footer {
   color: var(--light);
 }
 
-.login-form input {
+.login-form input,
+.register-form input {
   padding: 0.7rem;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 4px;
   font-size: 1rem;
-  background: var(--light);
+  width: 100%;
   color: var(--dark);
   margin-bottom: 0.8rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-form input {
+  background: var(--light);
+}
+
+.register-form input {
+  background: var(--light);
+  border-color: #ccc;
+}
+
+.login-form input:focus,
+.register-form input:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.login-form input:required:invalid,
+.login-form input:focus:invalid,
+.register-form input:required:invalid,
+.register-form input:focus:invalid {
+  border-color: #cc2b2b;
+  box-shadow: 0 0 0 2px rgba(204, 43, 43, 0.12);
+}
+
+.login-form input:required:valid,
+.register-form input:required:valid {
+  border-color: #2e8b57;
+  box-shadow: 0 0 0 2px rgba(46, 139, 87, 0.12);
+}
+
+.form-note,
+.password-hint {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 6px;
+  background: #eef4fb;
+  border-left: 4px solid var(--accent);
+  color: #27455f;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 /* Center the login button */
@@ -305,6 +348,11 @@ footer {
 .login-container > p a {
   color: var(--light);
   font-weight: 700;
+}
+
+.login-container .form-note,
+.login-container .password-hint {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 /* Responsive - full width on small screens */
@@ -338,25 +386,6 @@ footer {
   margin-top: 0.6rem;
 }
 
-.register-form small {
-  color: #666;
-  font-size: 0.8rem;
-  line-height: 1.4;
-}
-
-.register-form input {
-  padding: 0.7rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  width: 100%;
-}
-
-.register-form input:focus {
-  outline: 2px solid var(--accent);
-  border-color: var(--accent);
-}
-
 /* Wrapper to position the toggle button inside the password field */
 .password-wrapper {
   position: relative;
@@ -372,12 +401,14 @@ footer {
 /* Style the password visibility toggle button */
 .toggle-password {
   position: absolute;
-  right: 0.5rem;
-  background: none;
-  border: none;
+  right: 0.35rem;
+  background: var(--muted);
+  border: 1px solid #cfd7e2;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 1.1rem;
-  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.55rem;
   color: var(--dark);
 }
 
