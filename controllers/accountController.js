@@ -1,12 +1,14 @@
-// Needed Resources
+// Account controller: renders account views and coordinates auth/profile workflows.
 const utilities = require("../utilities/")
 const accountModel = require("../models/account-model")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 require("dotenv").config()
 
+// One hour, expressed in milliseconds for cookie maxAge.
 const TOKEN_MAX_AGE = 60 * 60 * 1000
 
+// Only include non-sensitive fields in the JWT payload.
 function buildAccountTokenPayload(accountData) {
   return {
     account_id: accountData.account_id,
@@ -17,6 +19,7 @@ function buildAccountTokenPayload(accountData) {
   }
 }
 
+// Centralize JWT cookie creation so login and account updates stay consistent.
 function setJwtCookie(res, accountData) {
   const accessToken = jwt.sign(
     buildAccountTokenPayload(accountData),
@@ -29,6 +32,7 @@ function setJwtCookie(res, accountData) {
     maxAge: TOKEN_MAX_AGE,
   }
 
+  // Production cookies should only travel over HTTPS.
   if (process.env.NODE_ENV !== "development") {
     cookieOptions.secure = true
   }
@@ -36,6 +40,7 @@ function setJwtCookie(res, accountData) {
   res.cookie("jwt", accessToken, cookieOptions)
 }
 
+// Reuse the same render logic when initial page delivery and validation errors need the update view.
 async function renderUpdateView(req, res, accountData, errors = null) {
   const nav = await utilities.getNav()
 
@@ -70,12 +75,14 @@ async function buildLogin(req, res, next) {
 async function buildAccountManagement(req, res, next) {
   let nav = await utilities.getNav()
   const account_id = parseInt(res.locals.accountData.account_id, 10)
+  // Refresh account data from the database so the management page shows the latest saved values.
   const freshAccountData = await accountModel.getAccountById(account_id)
   const accountData =
     freshAccountData && !(freshAccountData instanceof Error)
       ? freshAccountData
       : res.locals.accountData
 
+  // Keep locals synchronized so the layout/header also uses the fresh account values.
   res.locals.accountData = accountData
   res.render("account/management", {
     title: "Account Management",
@@ -108,6 +115,7 @@ async function buildUpdateAccountView(req, res, next) {
   const account_id = parseInt(req.params.account_id, 10)
   const loggedInAccountId = parseInt(res.locals.accountData.account_id, 10)
 
+  // Prevent one user from manually typing another account id into the URL.
   if (Number.isNaN(account_id) || account_id !== loggedInAccountId) {
     req.flash("notice", "You may only update your own account information.")
     return res.redirect("/account/")
@@ -127,10 +135,10 @@ async function buildUpdateAccountView(req, res, next) {
 * *************************************** */
 async function registerAccount(req, res) {
   let nav = await utilities.getNav()
-  // Destructure the form data from the request body using the data trail field names.
+  // Destructure the form data from the request body using the same names as the database fields.
   const { account_firstname, account_lastname, account_email, account_password } = req.body
 
-  // Hash the password before storing
+  // Hash the password before storing it so plain text never reaches the database.
   let hashedPassword
   try {
     hashedPassword = await bcrypt.hashSync(account_password, 10)
@@ -146,7 +154,7 @@ async function registerAccount(req, res) {
     })
   }
 
-  // Send the data to the model to be inserted into the database.
+  // Send the cleaned data to the model for insertion.
   const regResult = await accountModel.registerAccount(
     account_firstname,
     account_lastname,
@@ -154,7 +162,7 @@ async function registerAccount(req, res) {
     hashedPassword
   )
 
-  // If successful, flash a congratulations message and redirect to login.
+  // On success, send the user to login rather than automatically authenticating the new account.
   if (regResult && regResult.rowCount) {
     req.flash(
       "notice",
@@ -168,7 +176,7 @@ async function registerAccount(req, res) {
     })
   }
 
-  // If the insertion failed, flash an error and return to the registration view.
+  // If the insert failed, send the user back to try again.
   req.flash("notice", "Sorry, the registration failed.")
   return res.status(501).render("account/register", {
     title: "Register",
@@ -186,6 +194,7 @@ async function registerAccount(req, res) {
 async function accountLogin(req, res) {
   const nav = await utilities.getNav()
   const { account_email, account_password } = req.body
+  // Load the stored account row so the submitted password can be compared to the saved hash.
   const accountData = await accountModel.getAccountByEmail(account_email)
 
   if (!accountData || accountData instanceof Error || typeof accountData === "string") {
@@ -199,6 +208,7 @@ async function accountLogin(req, res) {
   }
 
   try {
+    // bcrypt compares the plain-text password against the stored hash securely.
     const passwordMatch = await bcrypt.compare(
       account_password,
       accountData.account_password
@@ -214,8 +224,10 @@ async function accountLogin(req, res) {
       })
     }
 
+    // Never place the password hash into the JWT payload.
     delete accountData.account_password
 
+    // Issue a fresh auth cookie and send the user to their management page.
     setJwtCookie(res, accountData)
     req.flash("notice", `Welcome back, ${accountData.account_firstname}.`)
     return res.redirect("/account/")
@@ -242,11 +254,13 @@ async function updateAccount(req, res) {
     account_email,
   } = req.body
 
+  // Reject attempts to post updates for a different account id.
   if (Number.isNaN(account_id) || account_id !== loggedInAccountId) {
     req.flash("notice", "You may only update your own account information.")
     return res.redirect("/account/")
   }
 
+  // Persist the editable profile fields.
   const updateResult = await accountModel.updateAccount(
     account_firstname,
     account_lastname,
@@ -255,6 +269,7 @@ async function updateAccount(req, res) {
   )
 
   if (updateResult && !(updateResult instanceof Error) && typeof updateResult !== "string") {
+    // Rebuild the cookie so header greetings and future auth checks use the updated data.
     const refreshedAccountData = await accountModel.getAccountById(account_id)
 
     if (refreshedAccountData && !(refreshedAccountData instanceof Error)) {
@@ -277,11 +292,13 @@ async function updatePassword(req, res) {
   const account_id = parseInt(req.body.account_id, 10)
   const { account_password } = req.body
 
+  // Reject password updates aimed at another account id.
   if (Number.isNaN(account_id) || account_id !== loggedInAccountId) {
     req.flash("notice", "You may only update your own account information.")
     return res.redirect("/account/")
   }
 
+  // Hash the replacement password before storing it.
   let hashedPassword
   try {
     hashedPassword = await bcrypt.hashSync(account_password, 10)
@@ -290,6 +307,7 @@ async function updatePassword(req, res) {
     return res.redirect("/account/")
   }
 
+  // Save only the hash in the database.
   const updateResult = await accountModel.updatePassword(
     hashedPassword,
     account_id
@@ -312,10 +330,12 @@ async function accountLogout(req, res) {
     httpOnly: true,
   }
 
+  // Match the secure flag rules used when the cookie was created.
   if (process.env.NODE_ENV !== "development") {
     cookieOptions.secure = true
   }
 
+  // Clearing the JWT removes the browser's authorization token.
   res.clearCookie("jwt", cookieOptions)
   req.flash("notice", "You have been logged out.")
   return res.redirect("/")

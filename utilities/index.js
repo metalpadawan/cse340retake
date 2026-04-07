@@ -5,7 +5,9 @@ require("dotenv").config()
 const Util = {}
 
 /* ************************
- * Constructs the nav HTML unordered list
+ * Construct the navigation markup
+ * This is rebuilt on each request so the current
+ * page can be marked as active in the UI.
  ************************** */
 Util.getNav = async function (currentPath = "/", activeClassificationId = null) {
   let data = await invModel.getClassifications()
@@ -38,6 +40,10 @@ Util.getNav = async function (currentPath = "/", activeClassificationId = null) 
 
 /* **************************************
  * Normalize stored vehicle image paths
+ * Some rows were saved with duplicated folders
+ * (for example /images/vehicles/vehicles/...).
+ * This helper reduces every stored path to the
+ * final filename and rebuilds a clean public URL.
  * ************************************ */
 Util.resolveVehicleImagePath = function (
   imagePath,
@@ -58,7 +64,9 @@ Util.resolveVehicleImagePath = function (
 }
 
 /* **************************************
- * Build the classification view HTML
+ * Build the classification page grid
+ * Converts raw inventory rows into a ready-to-
+ * render HTML list for the classification view.
  * ************************************ */
 Util.buildClassificationGrid = async function(data){
   let grid = ""
@@ -98,7 +106,10 @@ Util.buildClassificationGrid = async function(data){
 }
 
 /* **************************************
- * Build the vehicle detail view HTML
+ * Build the vehicle detail markup
+ * Keeps the detail-page HTML generation in one
+ * place so the controller can stay focused on
+ * fetching data and choosing the view.
  * ************************************ */
 Util.buildVehicleDetail = async function (vehicle) {
   const imagePath = Util.resolveVehicleImagePath(vehicle.inv_image)
@@ -129,6 +140,8 @@ Util.buildVehicleDetail = async function (vehicle) {
 
 /* **************************************
  * Build the classification select list
+ * Used by both the add and edit inventory forms,
+ * and by the inventory management page selector.
  * ************************************ */
 Util.buildClassificationList = async function (classification_id = null) {
   const data = await invModel.getClassifications()
@@ -152,7 +165,11 @@ Util.buildClassificationList = async function (classification_id = null) {
 }
 
 /* ****************************************
- * Middleware to check token validity
+ * Validate any JWT cookie on the request
+ * If the token is valid, the logged-in flag and
+ * account payload are attached to res.locals so
+ * later middleware, controllers, and views can
+ * use them without re-reading the cookie.
  **************************************** */
 Util.checkJWTToken = (req, res, next) => {
   res.locals.loggedin = 0
@@ -168,6 +185,7 @@ Util.checkJWTToken = (req, res, next) => {
           return res.redirect("/account/login")
         }
 
+        // Store auth state for the rest of this request-response cycle.
         res.locals.loggedin = 1
         res.locals.accountData = accountData
         return next()
@@ -179,7 +197,9 @@ Util.checkJWTToken = (req, res, next) => {
 }
 
 /* ****************************************
- *  Check login
+ * Require a logged-in account
+ * Used for areas that any authenticated user
+ * may access, regardless of account type.
  * ************************************ */
 Util.checkLogin = (req, res, next) => {
   if (res.locals.loggedin) {
@@ -191,7 +211,10 @@ Util.checkLogin = (req, res, next) => {
 }
 
 /* ****************************************
- *  Check employee or admin account type
+ * Require an Employee or Admin account
+ * This protects inventory management routes from
+ * regular client accounts while still allowing
+ * public browsing of classification/detail pages.
  * ************************************ */
 Util.checkAccountType = async (req, res, next) => {
   const nav = await Util.getNav()
@@ -219,9 +242,10 @@ Util.checkAccountType = async (req, res, next) => {
 }
 
 /* ****************************************
- * Middleware For Handling Errors
- * Wrap other function in this for 
- * General Error Handling
+ * Wrap async route/controller functions
+ * Express does not automatically catch rejected
+ * promises, so this helper forwards those errors
+ * to the shared error handler.
  **************************************** */
 Util.handleErrors = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next)
 

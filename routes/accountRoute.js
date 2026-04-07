@@ -1,33 +1,31 @@
-// Needed Resources
+// Account router: authentication, registration, profile updates, and logout.
 const express = require("express")
 const router = new express.Router()
 const utilities = require("../utilities/")
 const accountController = require("../controllers/accountController")
 const regValidate = require("../utilities/account-validation")
 
-// Route to build the login view
-// Example result: /account/login
+// Deliver the login page.
 router.get("/login", utilities.handleErrors(accountController.buildLogin))
 
-// Route to build account management view
+// Deliver the default account-management page for the logged-in user.
 router.get(
   "/",
   utilities.checkLogin,
   utilities.handleErrors(accountController.buildAccountManagement)
 )
 
-// Route to build the registration view
-// Example result: /account/register
+// Deliver the registration page.
 router.get("/register", utilities.handleErrors(accountController.buildRegister))
 
-// Route to build account update view
+// Deliver the account update page for the logged-in account id.
 router.get(
   "/update/:account_id",
   utilities.checkLogin,
   utilities.handleErrors(accountController.buildUpdateAccountView)
 )
 
-// Route to process the registration data
+// Validate and register a brand-new account.
 router.post(
   "/register",
   regValidate.registrationRules(),
@@ -35,7 +33,7 @@ router.post(
   utilities.handleErrors(accountController.registerAccount)
 )
 
-// Process the login attempt
+// Validate credentials, authenticate the account, and issue the JWT cookie.
 router.post(
   "/login",
   regValidate.loginRules(),
@@ -43,7 +41,7 @@ router.post(
   utilities.handleErrors(accountController.accountLogin)
 )
 
-// Process account update
+// Validate and save the non-password account fields.
 router.post(
   "/update",
   utilities.checkLogin,
@@ -52,7 +50,7 @@ router.post(
   utilities.handleErrors(accountController.updateAccount)
 )
 
-// Process password update
+// Validate and save a replacement password hash.
 router.post(
   "/update-password",
   utilities.checkLogin,
@@ -61,7 +59,7 @@ router.post(
   utilities.handleErrors(accountController.updatePassword)
 )
 
-// Process logout
+// Clear the auth cookie and end the session from the browser's perspective.
 router.get(
   "/logout",
   utilities.checkLogin,

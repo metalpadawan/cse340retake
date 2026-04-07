@@ -1,10 +1,11 @@
+// Inventory model: all database reads and writes for vehicle/classification data.
 const pool = require("../database/")
 
 /* ***************************
  *  Get all classification data
  * ************************** */
 async function getClassifications(){
-  // Return every classification so the navigation can be built in alphabetical order.
+  // Return every classification so navigation and select lists can be built alphabetically.
   return await pool.query("SELECT * FROM public.classification ORDER BY classification_name")
 }
 
@@ -13,7 +14,7 @@ async function getClassifications(){
  * ************************** */
 async function getInventoryByClassificationId(classification_id) {
   try {
-    // Join inventory with classification so each vehicle record also includes its category name.
+    // Join inventory with classification so each row carries both vehicle and category details.
     const data = await pool.query(
       `SELECT * FROM public.inventory AS i 
       JOIN public.classification AS c 
@@ -33,7 +34,7 @@ async function getInventoryByClassificationId(classification_id) {
  * ************************** */
 async function getInventoryById(inv_id) {
   try {
-    // Use a parameterized query to safely retrieve a single vehicle with its classification name.
+    // Retrieve one vehicle plus its classification information for edit/detail/delete pages.
     const data = await pool.query(
       `SELECT * FROM public.inventory AS i
       JOIN public.classification AS c
@@ -52,6 +53,7 @@ async function getInventoryById(inv_id) {
  * ************************** */
 async function insertClassification(classification_name) {
   try {
+    // RETURNING * lets the controller verify the insert succeeded immediately.
     const sql =
       "INSERT INTO public.classification (classification_name) VALUES ($1) RETURNING *"
     return await pool.query(sql, [classification_name])
@@ -65,6 +67,7 @@ async function insertClassification(classification_name) {
  * ************************** */
 async function checkExistingClassification(classification_name) {
   try {
+    // Compare in lowercase so "SUV" and "suv" are treated as duplicates.
     const sql =
       "SELECT * FROM public.classification WHERE LOWER(classification_name) = LOWER($1)"
     const data = await pool.query(sql, [classification_name])
@@ -90,6 +93,7 @@ async function insertInventory(
   classification_id
 ) {
   try {
+    // The placeholder order must match the value array exactly.
     const sql = `INSERT INTO public.inventory
       (inv_make, inv_model, inv_year, inv_description, inv_image, inv_thumbnail, inv_price, inv_miles, inv_color, classification_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -128,6 +132,7 @@ async function updateInventory(
   classification_id
 ) {
   try {
+    // Update every editable inventory field and return the finished row for confirmation messaging.
     const sql = `UPDATE public.inventory
       SET inv_make = $1,
           inv_model = $2,
@@ -167,6 +172,7 @@ async function updateInventory(
  * ************************** */
 async function deleteInventoryItem(inv_id) {
   try {
+    // Delete only the requested inventory row by primary key.
     const sql = "DELETE FROM public.inventory WHERE inv_id = $1"
     const data = await pool.query(sql, [inv_id])
     return data

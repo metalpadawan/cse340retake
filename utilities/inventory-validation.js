@@ -1,3 +1,4 @@
+// Inventory validation middleware: protects add/edit forms and returns sticky values on errors.
 const utilities = require(".")
 const invModel = require("../models/inventory-model")
 const { body, validationResult } = require("express-validator")
@@ -9,6 +10,7 @@ const validate = {}
  * ***************************** */
 validate.classificationRules = () => {
   return [
+    // Classification names are limited to letters and numbers so the nav stays predictable.
     body("classification_name")
       .trim()
       .escape()
@@ -18,6 +20,7 @@ validate.classificationRules = () => {
       .matches(/^[A-Za-z0-9]+$/)
       .withMessage("Classification name cannot contain spaces or special characters.")
       .bail()
+      // Prevent duplicate classification rows before insert is attempted.
       .custom(async (classification_name) => {
         const classificationExists =
           await invModel.checkExistingClassification(classification_name)
@@ -42,6 +45,7 @@ validate.checkClassificationData = async (req, res, next) => {
   errors = validationResult(req)
 
   if (!errors.isEmpty()) {
+    // Return the attempted classification name so the user can correct it quickly.
     return res.render("inventory/add-classification", {
       title: "Add Classification",
       errors,
@@ -57,6 +61,7 @@ validate.checkClassificationData = async (req, res, next) => {
  * ***************************** */
 validate.inventoryRules = () => {
   return [
+    // These rules mirror the database field types and the client-side HTML requirements.
     body("inv_make")
       .trim()
       .escape()
@@ -91,6 +96,7 @@ validate.inventoryRules = () => {
       .notEmpty()
       .withMessage("Please provide an inventory image path.")
       .bail()
+      // Require images to be stored under the public vehicle image folder.
       .matches(/^\/images\/vehicles\/[A-Za-z0-9._-]+\.(jpg|jpeg|png|gif|webp)$/i)
       .withMessage("Please provide a valid inventory image path."),
 
@@ -133,6 +139,7 @@ validate.inventoryRules = () => {
       .bail()
       .isInt({ min: 1 })
       .withMessage("Please choose a classification.")
+      // Cast the chosen classification id to an integer for safer downstream use.
       .toInt(),
   ]
 }
@@ -158,6 +165,7 @@ validate.checkInventoryData = async (req, res, next) => {
   errors = validationResult(req)
 
   if (!errors.isEmpty()) {
+    // Rebuild the select list and refill the rest of the form inputs.
     const classificationList = await utilities.buildClassificationList(
       classification_id
     )
@@ -204,6 +212,7 @@ validate.checkUpdateData = async (req, res, next) => {
   errors = validationResult(req)
 
   if (!errors.isEmpty()) {
+    // The edit view needs inv_id returned too so a later successful submit still knows which row to update.
     const classificationList = await utilities.buildClassificationList(
       classification_id
     )

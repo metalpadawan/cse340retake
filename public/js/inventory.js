@@ -1,6 +1,8 @@
 'use strict'
 
-// Get a list of items in inventory based on the classification_id
+// Inventory management page script:
+// listens for classification changes, requests matching inventory rows,
+// then builds the management table in the browser.
 const classificationList = document.querySelector("#classificationList")
 
 if (classificationList) {
@@ -10,11 +12,13 @@ if (classificationList) {
 
     console.log(`classification_id is: ${classification_id}`)
 
+    // Clear the table when the placeholder option is selected.
     if (!classification_id) {
       inventoryDisplay.innerHTML = ""
       return
     }
 
+    // Request the JSON data for the selected classification.
     const classIdURL = "/inv/getInventory/" + classification_id
     fetch(classIdURL)
       .then(function (response) {
@@ -25,6 +29,7 @@ if (classificationList) {
       })
       .then(function (data) {
         console.log(data)
+        // Convert the returned JSON rows into table markup.
         buildInventoryList(data)
       })
       .catch(function (error) {
@@ -46,6 +51,7 @@ function buildInventoryList(data) {
   dataTable += "<tbody>"
 
   if (data.length === 0) {
+    // Show an explicit empty-state row instead of leaving the table blank.
     dataTable += "<tr><td colspan='3'>No inventory items were found for this classification.</td></tr>"
   } else {
     // Iterate over all vehicles in the array and put each in a row

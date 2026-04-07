@@ -1,3 +1,4 @@
+// Database connection helper: exports a pg Pool configured for the current environment.
 const { Pool } = require("pg")
 require("dotenv").config()
 /* ***************
@@ -16,8 +17,7 @@ if (process.env.NODE_ENV == "development") {
     },
 })
 
-// Added for troubleshooting queries
-// during development
+// In development, wrap pool.query so executed SQL is easier to trace in the terminal.
 module.exports = {
   async query(text, params) {
     try {
@@ -32,7 +32,7 @@ module.exports = {
   },
 }
 } else {
-  // Production can use the pool directly with the deployed connection string.
+  // Production uses the plain pool export because query logging is less helpful there.
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   })

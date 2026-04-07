@@ -1,3 +1,4 @@
+// Inventory controller: renders public inventory pages and protected admin workflows.
 const invModel = require("../models/inventory-model")
 const utilities = require("../utilities/")
 
@@ -7,6 +8,7 @@ const invCont = {}
  *  Build inventory management view
  * ************************** */
 invCont.buildManagement = async function (req, res) {
+  // Reuse the same classification selector used by add/edit inventory forms.
   const classificationSelect = await utilities.buildClassificationList()
 
   res.render("inventory/management", {
@@ -19,6 +21,7 @@ invCont.buildManagement = async function (req, res) {
  *  Build add classification view
  * ************************** */
 invCont.buildAddClassification = async function (req, res) {
+  // Start with an empty classification field for a clean form load.
   res.render("inventory/add-classification", {
     title: "Add Classification",
     errors: null,
@@ -30,6 +33,7 @@ invCont.buildAddClassification = async function (req, res) {
  *  Build add inventory view
  * ************************** */
 invCont.buildAddInventory = async function (req, res) {
+  // Preload the select list and default image placeholders for a new vehicle.
   const classificationList = await utilities.buildClassificationList()
 
   res.render("inventory/add-inventory", {
@@ -55,16 +59,19 @@ invCont.buildAddInventory = async function (req, res) {
 invCont.buildEditInventory = async function (req, res, next) {
   const inv_id = parseInt(req.params.inv_id, 10)
 
+  // Reject malformed ids before querying the database.
   if (Number.isNaN(inv_id)) {
     return next({ status: 404, message: "Sorry, we appear to have lost that page." })
   }
 
+  // Load the existing inventory row so the edit form can be prefilled.
   const itemData = await invModel.getInventoryById(inv_id)
 
   if (!itemData) {
     return next({ status: 404, message: "Sorry, we appear to have lost that page." })
   }
 
+  // Build the select list with the current classification preselected.
   const classificationList = await utilities.buildClassificationList(
     itemData.classification_id
   )
@@ -106,6 +113,7 @@ invCont.updateInventory = async function (req, res) {
     classification_id,
   } = req.body
 
+  // Send the edited field values to the model for persistence.
   const updateResult = await invModel.updateInventory(
     inv_id,
     inv_make,
@@ -126,6 +134,7 @@ invCont.updateInventory = async function (req, res) {
     return res.redirect("/inv/")
   }
 
+  // If the update fails, rebuild the edit form with the submitted values intact.
   const classificationList = await utilities.buildClassificationList(
     classification_id
   )
@@ -155,10 +164,12 @@ invCont.updateInventory = async function (req, res) {
 invCont.buildDeleteConfirm = async function (req, res, next) {
   const inv_id = parseInt(req.params.inv_id, 10)
 
+  // Reject malformed ids before attempting the lookup.
   if (Number.isNaN(inv_id)) {
     return next({ status: 404, message: "Sorry, we appear to have lost that page." })
   }
 
+  // Fetch the existing row so the user can confirm they are deleting the right item.
   const itemData = await invModel.getInventoryById(inv_id)
 
   if (!itemData) {
@@ -186,6 +197,7 @@ invCont.deleteInventoryItem = async function (req, res) {
   const { inv_make, inv_model } = req.body
   const itemName = `${inv_make} ${inv_model}`
 
+  // The model returns the database rowCount so the controller can decide success or failure.
   const deleteResult = await invModel.deleteInventoryItem(inv_id)
 
   if (deleteResult && deleteResult.rowCount) {
@@ -242,9 +254,11 @@ invCont.buildByInventoryId = async function (req, res, next) {
  * ************************** */
 invCont.addClassification = async function (req, res) {
   const { classification_name } = req.body
+  // Insert the new classification so it becomes available in nav and select lists.
   const regResult = await invModel.insertClassification(classification_name)
 
   if (regResult && regResult.rowCount) {
+    // Rebuild nav/select values immediately so the new classification appears without a refresh.
     const nav = await utilities.getNav()
     const classificationSelect = await utilities.buildClassificationList()
     req.flash("notice", `The ${classification_name} classification was added successfully.`)
@@ -280,6 +294,7 @@ invCont.addInventory = async function (req, res) {
     classification_id,
   } = req.body
 
+  // Insert the new vehicle using the exact field order expected by the model query.
   const regResult = await invModel.insertInventory(
     inv_make,
     inv_model,
@@ -304,6 +319,7 @@ invCont.addInventory = async function (req, res) {
     })
   }
 
+  // If the insert fails, repopulate the form so the user does not lose their work.
   const classificationList = await utilities.buildClassificationList(
     classification_id
   )
@@ -340,10 +356,12 @@ invCont.triggerError = async function (req, res, next) {
 invCont.getInventoryJSON = async function (req, res, next) {
   const classification_id = parseInt(req.params.classification_id, 10)
 
+  // Return an empty array for invalid input so the AJAX caller can fail gracefully.
   if (Number.isNaN(classification_id)) {
     return res.json([])
   }
 
+  // Return plain JSON for the management page JavaScript to transform into a table.
   const invData = await invModel.getInventoryByClassificationId(classification_id)
 
   if (invData && invData.length > 0 && invData[0].inv_id) {

@@ -1,9 +1,11 @@
+// Account validation middleware: sanitizes, validates, and redisplays sticky form values.
 const utilities = require(".")
 const accountModel = require("../models/account-model")
 const { body, validationResult } = require("express-validator")
 
 const validate = {}
 
+// Shared renderer so account update validation errors can return the same view consistently.
 async function renderAccountUpdateView(res, req, data = {}, errors = null) {
   const nav = await utilities.getNav()
   const {
@@ -29,6 +31,7 @@ async function renderAccountUpdateView(res, req, data = {}, errors = null) {
  * ********************************* */
 validate.registrationRules = () => {
   return [
+    // Trim and escape the names before checking that something meaningful remains.
     body("account_firstname")
       .trim()
       .escape()
@@ -55,6 +58,7 @@ validate.registrationRules = () => {
       .withMessage("A valid email is required.")
       .bail()
       .normalizeEmail()
+      // Registration must block duplicate emails because email is used as the login identity.
       .custom(async (account_email) => {
         const emailExists = await accountModel.checkExistingEmail(account_email)
 
@@ -72,6 +76,7 @@ validate.registrationRules = () => {
       .notEmpty()
       .withMessage("Password does not meet requirements.")
       .bail()
+      // Mirror the password strength rules used in the client-side pattern validation.
       .isStrongPassword({
         minLength: 12,
         minLowercase: 1,
@@ -95,6 +100,7 @@ validate.checkRegData = async (req, res, next) => {
   errors = validationResult(req)
 
   if (!errors.isEmpty()) {
+    // Re-render the form with sticky values for every field except the password.
     const nav = await utilities.getNav()
     res.render("account/register", {
       errors,
@@ -115,6 +121,7 @@ validate.checkRegData = async (req, res, next) => {
  * ********************************* */
 validate.loginRules = () => {
   return [
+    // Login still validates email format even though the account may or may not exist yet.
     body("account_email")
       .trim()
       .notEmpty()
@@ -130,6 +137,7 @@ validate.loginRules = () => {
       .notEmpty()
       .withMessage("Password does not meet requirements.")
       .bail()
+      // The login form uses the same strength requirements as registration in this project.
       .isStrongPassword({
         minLength: 12,
         minLowercase: 1,
@@ -150,6 +158,7 @@ validate.checkLoginData = async (req, res, next) => {
   errors = validationResult(req)
 
   if (!errors.isEmpty()) {
+    // Only keep the email sticky on login; never echo a password back to the page.
     const nav = await utilities.getNav()
     res.render("account/login", {
       errors,
@@ -168,6 +177,7 @@ validate.checkLoginData = async (req, res, next) => {
  * ********************************* */
 validate.accountUpdateRules = () => {
   return [
+    // The hidden account id lets the server verify ownership of the submitted update.
     body("account_id")
       .trim()
       .notEmpty()
@@ -204,6 +214,7 @@ validate.accountUpdateRules = () => {
       .withMessage("A valid email is required.")
       .bail()
       .normalizeEmail()
+      // Allow the current user to keep their own email, but block taking another user's email.
       .custom(async (account_email, { req }) => {
         const emailExists = await accountModel.checkExistingEmail(
           account_email,
@@ -236,6 +247,7 @@ validate.checkAccountUpdateData = async (req, res, next) => {
   errors = validationResult(req)
 
   if (!errors.isEmpty()) {
+    // Return the posted values so the update form stays sticky after validation failures.
     return renderAccountUpdateView(
       res,
       req,
@@ -257,6 +269,7 @@ validate.checkAccountUpdateData = async (req, res, next) => {
  * ********************************* */
 validate.passwordRules = () => {
   return [
+    // The password-change form includes its own hidden account id for authorization checks.
     body("account_id")
       .trim()
       .notEmpty()
@@ -271,6 +284,7 @@ validate.passwordRules = () => {
       .notEmpty()
       .withMessage("Password does not meet requirements.")
       .bail()
+      // Enforce the same strong-password rules used across registration and login.
       .isStrongPassword({
         minLength: 12,
         minLowercase: 1,
@@ -291,6 +305,7 @@ validate.checkPasswordUpdateData = async (req, res, next) => {
   errors = validationResult(req)
 
   if (!errors.isEmpty()) {
+    // Reload the existing account info so the non-password form remains populated.
     const accountData = await accountModel.getAccountById(account_id)
 
     return renderAccountUpdateView(
