@@ -1,17 +1,25 @@
 const invModel = require("../models/inventory-model")
 const jwt = require("jsonwebtoken")
+const path = require("path")
 require("dotenv").config()
 const Util = {}
 
 /* ************************
  * Constructs the nav HTML unordered list
  ************************** */
-Util.getNav = async function (req, res, next) {
+Util.getNav = async function (currentPath = "/", activeClassificationId = null) {
   let data = await invModel.getClassifications()
   // Start the navigation list with a permanent link back to the home page.
   let list = "<ul>"
-  list += '<li><a href="/" title="Home page">Home</a></li>'
+  const homeActive = currentPath === "/"
+  list += "<li>"
+  list += `<a href="/" title="Home page"${homeActive ? ' class="nav-active" aria-current="page"' : ""}>Home</a>`
+  list += "</li>"
   data.rows.forEach((row) => {
+    const classificationPath = `/inv/type/${row.classification_id}`
+    const isActive =
+      activeClassificationId == row.classification_id ||
+      currentPath.startsWith(classificationPath)
     list += "<li>"
     // Each classification becomes a clickable route to that category page.
     list +=
@@ -19,13 +27,34 @@ Util.getNav = async function (req, res, next) {
       row.classification_id +
       '" title="See our inventory of ' +
       row.classification_name +
-      ' vehicles">' +
+      ` vehicles"${isActive ? ' class="nav-active" aria-current="page"' : ""}>` +
       row.classification_name +
       "</a>"
     list += "</li>"
   })
   list += "</ul>"
   return list
+}
+
+/* **************************************
+ * Normalize stored vehicle image paths
+ * ************************************ */
+Util.resolveVehicleImagePath = function (
+  imagePath,
+  fallback = "/images/vehicles/no-image.png"
+) {
+  if (!imagePath || typeof imagePath !== "string") {
+    return fallback
+  }
+
+  const cleanedPath = imagePath.trim().replace(/\\/g, "/")
+  const fileName = path.posix.basename(cleanedPath)
+
+  if (!fileName || fileName === "." || fileName === "/") {
+    return fallback
+  }
+
+  return `/images/vehicles/${fileName}`
 }
 
 /* **************************************
@@ -37,23 +66,28 @@ Util.buildClassificationGrid = async function(data){
     // Build one card-like list item for every returned vehicle.
     grid = '<ul id="inv-display">'
     data.forEach(vehicle => { 
-      grid += '<li>'
-      grid +=  '<a href="../../inv/detail/'+ vehicle.inv_id 
-      + '" title="View ' + vehicle.inv_make + ' '+ vehicle.inv_model 
-      + 'details"><img src="' + vehicle.inv_thumbnail 
-      +'" alt="Image of '+ vehicle.inv_make + ' ' + vehicle.inv_model 
-      +' on CSE Motors" /></a>'
-      grid += '<div class="namePrice">'
-      grid += '<hr />'
-      grid += '<h2>'
-      grid += '<a href="../../inv/detail/' + vehicle.inv_id +'" title="View ' 
-      + vehicle.inv_make + ' ' + vehicle.inv_model + ' details">' 
-      + vehicle.inv_make + ' ' + vehicle.inv_model + '</a>'
-      grid += '</h2>'
-      grid += '<span>$' 
-      + new Intl.NumberFormat('en-US').format(vehicle.inv_price) + '</span>'
-      grid += '</div>'
-      grid += '</li>'
+      const thumbnailPath = Util.resolveVehicleImagePath(
+        vehicle.inv_thumbnail,
+        "/images/vehicles/no-image-tn.png"
+      )
+      const vehicleName = `${vehicle.inv_make} ${vehicle.inv_model}`
+      grid += `
+        <li>
+          <a href="../../inv/detail/${vehicle.inv_id}" title="View ${vehicleName} details">
+            <img
+              src="${thumbnailPath}"
+              alt="Image of ${vehicleName} on CSE Motors"
+              onerror="this.onerror=null;this.src='/images/vehicles/no-image-tn.png';"
+            />
+          </a>
+          <div class="namePrice">
+            <hr />
+            <h2>
+              <a href="../../inv/detail/${vehicle.inv_id}" title="View ${vehicleName} details">${vehicleName}</a>
+            </h2>
+            <span>$${new Intl.NumberFormat("en-US").format(vehicle.inv_price)}</span>
+          </div>
+        </li>`
     })
     grid += '</ul>'
   } else { 
@@ -67,13 +101,15 @@ Util.buildClassificationGrid = async function(data){
  * Build the vehicle detail view HTML
  * ************************************ */
 Util.buildVehicleDetail = async function (vehicle) {
+  const imagePath = Util.resolveVehicleImagePath(vehicle.inv_image)
   // Wrap the vehicle's data in a structured HTML block for the detail view.
   return `
     <section class="vehicle-detail">
       <img 
-        src="${vehicle.inv_image}" 
+        src="${imagePath}" 
         alt="Image of ${vehicle.inv_make} ${vehicle.inv_model}" 
         class="vehicle-detail__image"
+        onerror="this.onerror=null;this.src='/images/vehicles/no-image.png';"
       />
       <div class="vehicle-detail__info">
         <h2>${vehicle.inv_year} ${vehicle.inv_make} ${vehicle.inv_model}</h2>

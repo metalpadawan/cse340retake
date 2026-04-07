@@ -56,7 +56,7 @@ app.use("/account", accountRoute)
 // Make the navigation HTML available to every rendered view through res.locals.
 app.use(async (req, res, next) => {
   try {
-    res.locals.nav = await utilities.getNav()
+    res.locals.nav = await utilities.getNav(req.originalUrl)
     next()
   } catch (error) {
     next(error)
@@ -85,7 +85,7 @@ const host = process.env.HOST || "localhost"
 * Place after all other middleware
 *************************/
 app.use(async (err, req, res, next) => {
-  let nav = await utilities.getNav()
+  let nav = await utilities.getNav(req.originalUrl)
   console.error(`Error at: "${req.originalUrl}": ${err.message}`)
   if(err.status == 404){ message = err.message} else {message = 'Oh no! There was a crash. Maybe try a different route?'}
   res.render("errors/error", {
