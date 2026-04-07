@@ -20,6 +20,13 @@ router.get(
 // Example result: /account/register
 router.get("/register", utilities.handleErrors(accountController.buildRegister))
 
+// Route to build account update view
+router.get(
+  "/update/:account_id",
+  utilities.checkLogin,
+  utilities.handleErrors(accountController.buildUpdateAccountView)
+)
+
 // Route to process the registration data
 router.post(
   "/register",
@@ -34,6 +41,24 @@ router.post(
   regValidate.loginRules(),
   utilities.handleErrors(regValidate.checkLoginData),
   utilities.handleErrors(accountController.accountLogin)
+)
+
+// Process account update
+router.post(
+  "/update",
+  utilities.checkLogin,
+  regValidate.accountUpdateRules(),
+  utilities.handleErrors(regValidate.checkAccountUpdateData),
+  utilities.handleErrors(accountController.updateAccount)
+)
+
+// Process password update
+router.post(
+  "/update-password",
+  utilities.checkLogin,
+  regValidate.passwordRules(),
+  utilities.handleErrors(regValidate.checkPasswordUpdateData),
+  utilities.handleErrors(accountController.updatePassword)
 )
 
 // Process logout

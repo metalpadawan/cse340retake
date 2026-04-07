@@ -11,28 +11,28 @@
 <h1><%= title %></h1>
 
 <section class="account-management">
+  <h2>Welcome <%= accountData.account_firstname %></h2>
   <p class="form-note">
-    You are signed in and can manage your account information from here.
+    Review your account details below and use the available tools for your account type.
   </p>
 
-  <div class="management-links">
-    <article class="management-link-card">
-      <h2>Account Details</h2>
-      <p><strong>Name:</strong> <%= accountData.account_firstname %> <%= accountData.account_lastname %></p>
-      <p><strong>Email:</strong> <%= accountData.account_email %></p>
-      <p><strong>Account Type:</strong> <%= accountData.account_type %></p>
-    </article>
+  <article class="management-link-card">
+    <h3>Account Details</h3>
+    <p><strong>Name:</strong> <%= accountData.account_firstname %> <%= accountData.account_lastname %></p>
+    <p><strong>Email:</strong> <%= accountData.account_email %></p>
+    <p><strong>Account Type:</strong> <%= accountData.account_type %></p>
+  </article>
 
-    <a class="management-link-card" href="/account/logout">
-      <h2>Log Out</h2>
-      <p>End your current session and clear the authentication cookie.</p>
-    </a>
+  <p class="account-management__action">
+    <a class="btn" href="/account/update/<%= accountData.account_id %>">Update Account Information</a>
+  </p>
 
-    <% if (accountData.account_type === "Employee" || accountData.account_type === "Admin") { %>
-      <a class="management-link-card" href="/inv/">
-        <h2>Inventory Management</h2>
-        <p>Open the management tools for classifications and inventory.</p>
-      </a>
-    <% } %>
-  </div>
+  <% if (accountData.account_type === "Employee" || accountData.account_type === "Admin") { %>
+    <section class="account-management__inventory">
+      <h3>Inventory Management</h3>
+      <p>
+        <a href="/inv/">Open the inventory management tools</a>
+      </p>
+    </section>
+  <% } %>
 </section>

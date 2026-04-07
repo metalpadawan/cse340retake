@@ -1,0 +1,77 @@
+<%- messages() %>
+
+<% if (errors) { %>
+  <ul class="notice">
+    <% errors.array().forEach(error => { %>
+      <li><%= error.msg %></li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<h1><%= title %></h1>
+
+<section class="account-update">
+  <p class="form-note">
+    Use the forms below to update your account information or change your password.
+  </p>
+
+  <div class="account-update__grid">
+    <section class="account-update__panel">
+      <h2>Account Update</h2>
+      <form action="/account/update" method="post" class="account-form">
+        <label for="account_firstname">First Name</label>
+        <input
+          type="text"
+          name="account_firstname"
+          id="account_firstname"
+          value="<%= locals.account_firstname || '' %>"
+          required
+        />
+
+        <label for="account_lastname">Last Name</label>
+        <input
+          type="text"
+          name="account_lastname"
+          id="account_lastname"
+          value="<%= locals.account_lastname || '' %>"
+          required
+        />
+
+        <label for="account_email">Email Address</label>
+        <input
+          type="email"
+          name="account_email"
+          id="account_email"
+          value="<%= locals.account_email || '' %>"
+          required
+        />
+
+        <input type="hidden" name="account_id" value="<%= locals.account_id || '' %>" />
+        <button type="submit" class="btn account-form__btn">Update Account</button>
+      </form>
+    </section>
+
+    <section class="account-update__panel">
+      <h2>Change Password</h2>
+      <p class="password-hint">
+        Enter a new password to replace your current one. Passwords must be at least 12
+        characters and include 1 number, 1 lowercase letter, 1 uppercase letter, and 1 special character.
+      </p>
+
+      <form action="/account/update-password" method="post" class="account-form">
+        <label for="account_password">New Password</label>
+        <input
+          type="password"
+          name="account_password"
+          id="account_password"
+          pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{12,}$"
+          title="Password must be at least 12 characters and include 1 number, 1 lowercase letter, 1 uppercase letter, and 1 special character."
+          required
+        />
+
+        <input type="hidden" name="account_id" value="<%= locals.account_id || '' %>" />
+        <button type="submit" class="btn account-form__btn">Change Password</button>
+      </form>
+    </section>
+  </div>
+</section>

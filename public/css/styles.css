@@ -445,6 +445,91 @@ footer {
   }
 }
 
+/* Account management and update views */
+.account-management,
+.account-update {
+  max-width: 820px;
+  margin: 1.5rem auto;
+}
+
+.account-management__action {
+  margin: 1.25rem 0;
+}
+
+.account-management__inventory {
+  padding: 1.2rem;
+  border: 1px solid #dce5f0;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.account-management__inventory h3 {
+  margin-top: 0;
+}
+
+.account-update__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.account-update__panel {
+  padding: 1.5rem;
+  border: 2px solid var(--dark);
+  border-radius: 10px;
+  background: var(--light);
+}
+
+.account-update__panel h2 {
+  margin-top: 0;
+}
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.account-form label {
+  font-weight: 700;
+  color: var(--dark);
+  margin-top: 0.5rem;
+}
+
+.account-form input {
+  width: 100%;
+  padding: 0.75rem;
+  font: inherit;
+  color: var(--dark);
+  background: var(--light);
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-form input:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.account-form input:required:invalid,
+.account-form input:focus:invalid {
+  border-color: #cc2b2b;
+  box-shadow: 0 0 0 2px rgba(204, 43, 43, 0.12);
+}
+
+.account-form input:required:valid {
+  border-color: #2e8b57;
+  box-shadow: 0 0 0 2px rgba(46, 139, 87, 0.12);
+}
+
+.account-form__btn {
+  align-self: flex-start;
+  margin-top: 1rem;
+  border: none;
+  cursor: pointer;
+}
+
 /* Inventory management and form panels */
 .inventory-management,
 .inventory-panel {
@@ -621,6 +706,10 @@ noscript {
 }
 
 @media (max-width: 700px) {
+  .account-update__grid {
+    grid-template-columns: 1fr;
+  }
+
   .management-links {
     grid-template-columns: 1fr;
   }

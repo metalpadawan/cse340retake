@@ -155,6 +155,34 @@ Util.checkLogin = (req, res, next) => {
 }
 
 /* ****************************************
+ *  Check employee or admin account type
+ * ************************************ */
+Util.checkAccountType = async (req, res, next) => {
+  const nav = await Util.getNav()
+  const accountType = res.locals.accountData
+    ? res.locals.accountData.account_type
+    : null
+
+  if (
+    res.locals.loggedin &&
+    (accountType === "Employee" || accountType === "Admin")
+  ) {
+    return next()
+  }
+
+  req.flash(
+    "notice",
+    "Please log in with an employee or admin account to access that area."
+  )
+  return res.status(403).render("account/login", {
+    title: "Login",
+    nav,
+    errors: null,
+    account_email: "",
+  })
+}
+
+/* ****************************************
  * Middleware For Handling Errors
  * Wrap other function in this for 
  * General Error Handling
