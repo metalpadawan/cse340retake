@@ -49,6 +49,50 @@ async function getInventoryById(inv_id) {
 }
 
 /* ***************************
+ *  Search inventory by term and optional classification
+ * ************************** */
+async function searchInventory(search_term, classification_id = null) {
+  try {
+    const searchPattern = `%${String(search_term || "").trim()}%`
+    let sql = `SELECT
+      i.inv_id,
+      i.inv_make,
+      i.inv_model,
+      i.inv_year,
+      i.inv_description,
+      i.inv_price,
+      i.inv_miles,
+      i.inv_color,
+      i.classification_id,
+      c.classification_name
+    FROM public.inventory AS i
+    JOIN public.classification AS c
+      ON i.classification_id = c.classification_id
+    WHERE (
+      i.inv_make ILIKE $1
+      OR i.inv_model ILIKE $1
+      OR i.inv_description ILIKE $1
+      OR c.classification_name ILIKE $1
+    )`
+
+    const params = [searchPattern]
+
+    if (classification_id) {
+      sql += " AND i.classification_id = $2"
+      params.push(classification_id)
+    }
+
+    sql += " ORDER BY i.inv_make, i.inv_model, i.inv_year DESC"
+
+    const data = await pool.query(sql, params)
+    return data.rows
+  } catch (error) {
+    console.error("searchInventory error " + error)
+    throw error
+  }
+}
+
+/* ***************************
  *  Add a new classification
  * ************************** */
 async function insertClassification(classification_name) {
@@ -185,6 +229,7 @@ module.exports = {
   getClassifications,
   getInventoryByClassificationId,
   getInventoryById,
+  searchInventory,
   insertClassification,
   checkExistingClassification,
   insertInventory,

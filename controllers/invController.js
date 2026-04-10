@@ -54,6 +54,63 @@ invCont.buildAddInventory = async function (req, res) {
 }
 
 /* ***************************
+ *  Build inventory search view
+ * ************************** */
+invCont.buildSearchView = async function (req, res) {
+  // Start with an empty search form and an optional classification filter.
+  const classificationList = await utilities.buildClassificationList(
+    null,
+    true,
+    false
+  )
+
+  res.render("inventory/search", {
+    title: "Search Inventory",
+    errors: null,
+    classificationList,
+    search_term: "",
+    classification_id: "",
+    results: null,
+    hasSearched: false,
+  })
+}
+
+/* ***************************
+ *  Process inventory search
+ * ************************** */
+invCont.searchInventory = async function (req, res) {
+  const { search_term, classification_id } = req.body
+  const selectedClassificationId =
+    classification_id === null || classification_id === undefined || classification_id === ""
+      ? null
+      : Number.isNaN(Number(classification_id))
+        ? null
+        : parseInt(classification_id, 10)
+
+  // Rebuild the select list with the submitted filter preserved.
+  const classificationList = await utilities.buildClassificationList(
+    selectedClassificationId,
+    true,
+    false
+  )
+
+  const results = await invModel.searchInventory(
+    search_term,
+    selectedClassificationId
+  )
+
+  res.render("inventory/search", {
+    title: "Search Inventory",
+    errors: null,
+    classificationList,
+    search_term,
+    classification_id: selectedClassificationId || "",
+    results,
+    hasSearched: true,
+  })
+}
+
+/* ***************************
  *  Build edit inventory view
  * ************************** */
 invCont.buildEditInventory = async function (req, res, next) {

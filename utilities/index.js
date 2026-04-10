@@ -17,11 +17,21 @@ Util.getNav = async function (currentPath = "/", activeClassificationId = null) 
   list += "<li>"
   list += `<a href="/" title="Home page"${homeActive ? ' class="nav-active" aria-current="page"' : ""}>Home</a>`
   list += "</li>"
+
+  const searchActive = currentPath === "/inv/search"
+  list += "<li>"
+  list += `<a href="/inv/search" title="Search inventory"${searchActive ? ' class="nav-active" aria-current="page"' : ""}>Search Inventory</a>`
+  list += "</li>"
+
   data.rows.forEach((row) => {
     const classificationPath = `/inv/type/${row.classification_id}`
+    const pathMatchesClassification =
+      currentPath === classificationPath ||
+      currentPath.startsWith(`${classificationPath}/`) ||
+      currentPath.startsWith(`${classificationPath}?`)
     const isActive =
       activeClassificationId == row.classification_id ||
-      currentPath.startsWith(classificationPath)
+      pathMatchesClassification
     list += "<li>"
     // Each classification becomes a clickable route to that category page.
     list +=
@@ -143,18 +153,25 @@ Util.buildVehicleDetail = async function (vehicle) {
  * Used by both the add and edit inventory forms,
  * and by the inventory management page selector.
  * ************************************ */
-Util.buildClassificationList = async function (classification_id = null) {
+Util.buildClassificationList = async function (
+  classification_id = null,
+  includeAllOption = false,
+  required = true
+) {
   const data = await invModel.getClassifications()
+  const selectedClassificationId =
+    classification_id === null || classification_id === undefined || classification_id === ""
+      ? ""
+      : String(classification_id)
   let classificationList =
-    '<select name="classification_id" id="classificationList" class="inventory-form__select" required>'
-  classificationList += "<option value=''>Choose a Classification</option>"
+    `<select name="classification_id" id="classificationList" class="inventory-form__select"${required ? " required" : ""}>`
+  classificationList += `<option value=''${selectedClassificationId === "" ? " selected" : ""}>${
+    includeAllOption ? "All Classifications" : "Choose a Classification"
+  }</option>`
 
   data.rows.forEach((row) => {
     classificationList += '<option value="' + row.classification_id + '"'
-    if (
-      classification_id != null &&
-      row.classification_id == classification_id
-    ) {
+    if (selectedClassificationId === String(row.classification_id)) {
       classificationList += " selected "
     }
     classificationList += ">" + row.classification_name + "</option>"

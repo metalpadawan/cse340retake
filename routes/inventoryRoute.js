@@ -83,6 +83,20 @@ router.post(
   utilities.handleErrors(invController.deleteInventoryItem)
 )
 
+// Public search page for finding inventory by term and classification.
+router.get(
+  "/search",
+  utilities.handleErrors(invController.buildSearchView)
+)
+
+// Process inventory search requests and render matching results.
+router.post(
+  "/search",
+  invValidate.searchRules(),
+  utilities.handleErrors(invValidate.checkSearchData),
+  utilities.handleErrors(invController.searchInventory)
+)
+
 // Public classification browsing route.
 router.get("/type/:classificationId", utilities.handleErrors(invController.buildByClassificationId))
 

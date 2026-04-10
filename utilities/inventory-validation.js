@@ -6,6 +6,64 @@ const { body, validationResult } = require("express-validator")
 const validate = {}
 
 /* ******************************
+ * Inventory search validation rules
+ * ***************************** */
+validate.searchRules = () => {
+  return [
+    // Require a short but meaningful search term so the search stays useful.
+    body("search_term")
+      .trim()
+      .notEmpty()
+      .withMessage("Please enter a search term.")
+      .bail()
+      .isLength({ min: 2, max: 50 })
+      .withMessage("Search terms must be between 2 and 50 characters."),
+
+    // Allow the classification filter to be blank so users can search all inventory.
+    body("classification_id")
+      .optional({ checkFalsy: true })
+      .isInt({ min: 1 })
+      .withMessage("Please choose a valid classification.")
+      .toInt(),
+  ]
+}
+
+/* ******************************
+ * Check search data and return errors or continue
+ * ***************************** */
+validate.checkSearchData = async (req, res, next) => {
+  const { search_term, classification_id } = req.body
+  const errors = validationResult(req)
+
+  if (!errors.isEmpty()) {
+    const selectedClassificationId =
+      classification_id === null || classification_id === undefined || classification_id === ""
+        ? null
+        : Number.isNaN(Number(classification_id))
+          ? null
+          : parseInt(classification_id, 10)
+
+    const classificationList = await utilities.buildClassificationList(
+      selectedClassificationId,
+      true,
+      false
+    )
+
+    return res.render("inventory/search", {
+      title: "Search Inventory",
+      errors,
+      classificationList,
+      search_term,
+      classification_id: selectedClassificationId || "",
+      results: null,
+      hasSearched: false,
+    })
+  }
+
+  next()
+}
+
+/* ******************************
  * Classification data validation rules
  * ***************************** */
 validate.classificationRules = () => {
